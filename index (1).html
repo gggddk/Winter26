@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garrett's Study Hub</title>
+    <style>
+        /* --- Color Variables --- */
+        :root {
+            /* Light Mode (Standard) */
+            --bg-color: #f4f4f9;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --card-bg: #ffffff;
+            --card-border: #eeeeee;
+            --card-shadow: rgba(0,0,0,0.1);
+            --accent-color: #007bff; /* Standard Blue hover */
+            --toggle-btn-bg: #e0e0e0;
+            --toggle-btn-text: #333;
+        }
+
+        /* Dark Mode (MATCHING YOUR APP SCREENSHOT) */
+        body.dark-mode {
+            --bg-color: #1a1a2e;         /* Your deep navy background */
+            --text-main: #ffffff;        /* White text */
+            --text-sub: #a0a0a0;         /* Your secondary text color */
+            --card-bg: #16213e;          /* Your card background */
+            --card-border: #1f2b4d;      /* Slightly lighter border for definition */
+            --card-shadow: rgba(0,0,0,0.3);
+            --accent-color: #a29bfe;     /* The purple accent from your code */
+            --toggle-btn-bg: #16213e;
+            --toggle-btn-text: #a29bfe;
+        }
+
+        /* --- General Page Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- The Toggle Button --- */
+        .theme-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--toggle-btn-bg);
+            border: 1px solid var(--accent-color);
+            color: var(--toggle-btn-text);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            margin-top: 60px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        p {
+            color: var(--text-sub);
+            margin-top: 10px;
+        }
+
+        /* --- The App Grid --- */
+        .app-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1000px;
+            padding-bottom: 50px;
+        }
+
+        /* --- Individual App Cards --- */
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 15px; /* Matched your 15px radius */
+            box-shadow: 0 4px 6px var(--card-shadow);
+            padding: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 180px;
+        }
+
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--card-shadow);
+            border-color: var(--accent-color);
+        }
+
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .app-desc {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+
+    <header>
+        <h1>Garrett's Study Hub</h1>
+        <p>Select an application to launch</p>
+    </header>
+
+    <div class="app-container">
+
+        <a href="BIO260/index.html" class="app-card">
+            <div class="app-icon">🫀</div>
+            <div class="app-title">BIO260</div>
+            <div class="app-desc">Week 1</div>
+        </a>
+
+        <a href="NURSE151/index.html" class="app-card">
+            <div class="app-icon">📐</div>
+            <div class="app-title">NURSE151</div>
+            <div class="app-desc">Intro Quiz</div>
+        </a>
+
+        <a href="NotesApp/index.html" class="app-card">
+            <div class="app-icon">📝</div>
+            <div class="app-title">Quick Notes</div>
+            <div class="app-desc">Markdown editor</div>
+        </a>
+
+        <a href="#" class="app-card" style="border-style: dashed; opacity: 0.5;">
+            <div class="app-icon">➕</div>
+            <div class="app-title">Add New App</div>
+            <div class="app-desc">Coming soon</div>
+        </a>
+
+    </div>
+
+    <script>
+        // Check if user has a saved preference
+        const savedTheme = localStorage.getItem('theme');
+        const themeBtn = document.getElementById('themeBtn');
+
+        // Apply saved theme on load
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeBtn.innerText = "☀️ Light Mode";
+        }
+
+        // Toggle Function
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                themeBtn.innerText = "☀️ Light Mode";
+                localStorage.setItem('theme', 'dark'); // Save preference
+            } else {
+                themeBtn.innerText = "🌙 Dark Mode";
+                localStorage.setItem('theme', 'light'); // Save preference
+            }
+        }
+    </script>
+
+</body>
+</html>

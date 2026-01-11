@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro & A&P 2 Study Suite</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --accent: #ff6b6b;
+            --correct: #2ecc71;
+            --wrong: #e74c3c;
+            --menu-btn: #6c5ce7;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #ffffff;
+            --text-secondary: #a0a0a0;
+            --menu-btn: #a29bfe;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), #357abd);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .mode-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Views */
+        .view-section {
+            display: none; /* Hidden by default */
+            padding: 20px;
+            flex-grow: 1;
+            animation: fadeIn 0.4s;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Menu Styles */
+        .menu-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .menu-btn {
+            background-color: var(--menu-btn);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .menu-btn span {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            font-weight: 400;
+            margin-top: 5px;
+        }
+
+        .menu-btn.master {
+            background: linear-gradient(135deg, #ff9f43, #ee5253);
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        /* Quiz Styles */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-meta {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            background-color: rgba(0,0,0,0.05);
+            margin-bottom: 12px;
+            border-radius: 10px;
+            padding: 15px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        body.dark-mode .option-item {
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .option-item.selected {
+            border-color: var(--primary);
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        .option-item.correct {
+            border-color: var(--correct);
+            background-color: rgba(46, 204, 113, 0.2);
+        }
+
+        .option-item.wrong {
+            border-color: var(--wrong);
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+
+        /* Feedback */
+        .feedback-section {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: rgba(0,0,0,0.03);
+            display: none;
+            border-top: 4px solid var(--primary);
+            animation: slideUp 0.3s;
+        }
+
+        .feedback-header {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .feedback-header.correct { color: var(--correct); }
+        .feedback-header.wrong { color: var(--wrong); }
+
+        .nclex-tip {
+            background-color: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+
+        .dig-deeper-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-decoration: underline;
+        }
+
+        .dig-deeper-content {
+            display: none;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: rgba(74, 144, 226, 0.1);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .fun-fact {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--card-bg);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-text {
+            background: none;
+            color: var(--text-secondary);
+        }
+
+        /* Results */
+        .result-screen { text-align: center; padding-top: 40px; }
+        .score-circle {
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(var(--correct) 0%, rgba(0,0,0,0.1) 0%);
+            margin: 0 auto 25px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem; font-weight: 800; color: var(--text-color);
+            position: relative;
+        }
+        .score-circle::before {
+            content: ''; position: absolute;
+            width: 120px; height: 120px;
+            border-radius: 50%; background-color: var(--card-bg);
+        }
+        .score-text { position: relative; z-index: 2; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>Microbiology Prep</h1>
+        <button class="mode-toggle" onclick="toggleDarkMode()">🌙 Dark</button>
+    </div>
+
+    <div id="menuView" class="view-section active">
+        <h2 class="menu-title">Select a Quiz</h2>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="startQuiz('microbial_world')">
+                The Microbial World
+                <span>Intro, History, & Taxonomy</span>
+            </button>
+            <button class="menu-btn" onclick="startQuiz('microscopy')">
+                Microscopy & Staining
+                <span>Scopes, Gram Stains, & Shapes</span>
+            </button>
+            <button class="menu-btn" onclick="startQuiz('the_cell')">
+                The Cell
+                <span>Prokaryotes vs Eukaryotes</span>
+            </button>
+            <button class="menu-btn master" onclick="startQuiz('all')">
+                MASTER EXAM
+                <span>Combine all subjects (Randomized)</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="quizView" class="view-section">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <span class="question-meta" id="questionCategory">Category</span>
+        <div class="question-text" id="questionText">Loading...</div>
+        
+        <ul class="options-list" id="optionsList">
+            </ul>
+
+        <div class="feedback-section" id="feedbackSection">
+            <span class="feedback-header" id="feedbackHeader"></span>
+            
+            <div class="nclex-tip">
+                <strong>🏥 NCLEX Strategy:</strong> <span id="nclexText"></span>
+            </div>
+
+            <div id="explanationText" style="margin-bottom: 10px; line-height: 1.4;"></div>
+            
+            <button class="dig-deeper-btn" onclick="toggleDigDeeper()">▼ Dig Deeper</button>
+            <div class="dig-deeper-content" id="digDeeperContent"></div>
+
+            <div class="fun-fact" id="funFactText"></div>
+        </div>
+    </div>
+
+    <div id="resultView" class="view-section result-screen">
+        <h2>Assessment Complete</h2>
+        <div class="score-circle" id="scoreCircle">
+            <span class="score-text" id="finalScore">0%</span>
+        </div>
+        <p id="resultMessage" style="font-size: 1.1rem; margin-bottom: 30px;">Good effort!</p>
+        <button class="btn" onclick="showMenu()">Back to Menu</button>
+    </div>
+
+    <div class="footer" id="quizFooter" style="display:none;">
+        <button class="btn btn-text" onclick="showMenu()">Quit</button>
+        <button class="btn" id="actionBtn" onclick="handleAction()" disabled>Submit</button>
+    </div>
+</div>
+
+<script>
+    // --- DATABASE ---
+    const allQuestions = [
+        // --- CATEGORY 1: The Microbial World ---
+        {
+            category: "The Microbial World",
+            question: "Microbiology is specifically defined as the study of:",
+            options: ["Single-celled organisms only", "Organisms too small to be seen with the human eye", "Viruses and bacteria exclusively", "Infectious diseases in humans"],
+            correct: 1,
+            explanation: "Microbiology is the study of organisms too small to be seen with the naked eye. This includes bacteria, archaea, viruses, and microscopic eukaryotes.",
+            digDeeper: "This group includes acellular agents (viruses, prions) and cellular organisms (bacteria, archaea, eukarya).",
+            funFact: "If a bacterium were the size of a human, a virus would be about the size of a Lego brick!",
+            nclexStrategy: "Assessment: Focus on the prefix 'Micro' (small) to rule out distractors limiting the field to only 'single-celled' or 'infectious' agents."
+        },
+        {
+            category: "The Microbial World",
+            question: "How long have microorganisms been on Earth compared to animals?",
+            options: ["Microorganisms: 1 billion yrs; Animals: 0.5 billion yrs", "Microorganisms: 3.5 billion yrs; Animals: 0.6 billion yrs", "Microorganisms: 4.6 billion yrs; Animals: 2 billion yrs", "They appeared around the same time"],
+            correct: 1,
+            explanation: "Microorganisms have been on earth 3.5 billion years, while animals are only 0.6 billion years old. Earth is 4.6 billion years old.",
+            digDeeper: "Because they have existed so long, microbes have evolved to survive in almost every environment on Earth.",
+            funFact: "For the first 2 billion years of Earth's history, microbes were the only living things.",
+            nclexStrategy: "Analysis: Pay attention to specific numerical data benchmarks."
+        },
+        {
+            category: "The Microbial World",
+            question: "Who is credited with observing the first 'cell' using cork?",
+            options: ["Antony van Leeuwenhoek", "Louis Pasteur", "Robert Hooke", "Francesco Redi"],
+            correct: 2,
+            explanation: "Robert Hooke coined the term 'cell' looking at cork slices. He described them as looking like the small rooms (cells) monks lived in.",
+            digDeeper: "Hooke actually looked at dead plant cell walls. He didn't see the nucleus or organelles.",
+            funFact: "Hooke was a rival of Isaac Newton; Newton reportedly destroyed Hooke's only portrait!",
+            nclexStrategy: "Elimination: Associate 'Hooke' with 'Hooks' -> box shape of a cell wall."
+        },
+        {
+            category: "The Microbial World",
+            question: "Who was the first person to observe and describe LIVE microorganisms?",
+            options: ["Robert Hooke", "Carolus Linnaeus", "Antony van Leeuwenhoek", "Carl Woese"],
+            correct: 2,
+            explanation: "Antony van Leeuwenhoek was the first to observe live microorganisms in water/plaque, calling them 'animalcules'.",
+            digDeeper: "He used a simple, single-lens microscope that he ground himself, achieving 300x magnification.",
+            funFact: "Leeuwenhoek examined his own tooth plaque and stool samples to find these 'animalcules'!",
+            nclexStrategy: "Differentiation: Distinguish between 'Cells' (Hooke) and 'Live Microbes' (Leeuwenhoek)."
+        },
+        {
+            category: "The Microbial World",
+            question: "Which experiment disproved spontaneous generation for macroscopic organisms (maggots on meat)?",
+            options: ["Pasteur's Swan-Neck Flask", "Redi's Covered Jars", "Tyndall's Dust Experiment", "Koch's Postulates"],
+            correct: 1,
+            explanation: "Francesco Redi showed maggots only appeared on meat when flies landed on it. Covered jars had no maggots.",
+            digDeeper: "Spontaneous Generation is the obsolete theory that life arises from non-living matter.",
+            funFact: "Before Redi, people believed rotting meat turned into maggots magically.",
+            nclexStrategy: "Outcome Identification: Link 'maggots on meat' directly to Redi."
+        },
+        {
+            category: "The Microbial World",
+            question: "Louis Pasteur used which apparatus to disprove spontaneous generation for microorganisms?",
+            options: ["Sealed mason jars", "Swan-neck flasks", "Petri dishes", "Electron microscope"],
+            correct: 1,
+            explanation: "Pasteur used swan-neck flasks. The curve trapped dust/microbes, keeping broth sterile despite being open to air.",
+            digDeeper: "This proved Biogenesis: Living things only come from other living things.",
+            funFact: "Pasteur is the father of 'Pasteurization'—heating liquids to kill bacteria.",
+            nclexStrategy: "Rationale: Understand the mechanics (gravity trapping dust) to solve contamination questions."
+        },
+        {
+            category: "The Microbial World",
+            question: "Which scientist introduced Binomial Nomenclature (Genus species)?",
+            options: ["Carl Woese", "Carolus Linnaeus", "Robert Hooke", "Louis Pasteur"],
+            correct: 1,
+            explanation: "Carolus Linnaeus established the system where organisms have two names: Genus (capitalized) and species (lowercase).",
+            digDeeper: "Taxonomy is the science of classifying and naming organisms.",
+            funFact: "Your binomial name is Homo sapiens.",
+            nclexStrategy: "Safety: Correct naming prevents medication errors in clinical settings."
+        },
+        {
+            category: "The Microbial World",
+            question: "The Three-Domain system (Bacteria, Archaea, Eukarya) is based on:",
+            options: ["Cell wall structure", "Ribosomal RNA (rRNA) sequences", "Method of reproduction", "Presence of a nucleus"],
+            correct: 1,
+            explanation: "Carl Woese proposed the 3 domains based on differences in ribosomal RNA (rRNA) sequences.",
+            digDeeper: "rRNA evolves slowly, allowing comparison over billions of years.",
+            funFact: "Mushrooms are more closely related to humans than to flowers!",
+            nclexStrategy: "Assessment: 'Modern Classification' or 'Woese' always points to Genetics/rRNA."
+        },
+        {
+            category: "The Microbial World",
+            question: "Which domain contains prokaryotes with peptidoglycan cell walls?",
+            options: ["Bacteria", "Archaea", "Eukarya", "Viruses"],
+            correct: 0,
+            explanation: "Bacteria are prokaryotic and have cell walls containing peptidoglycan. Archaea lack peptidoglycan.",
+            digDeeper: "Peptidoglycan is the target of antibiotics like Penicillin.",
+            funFact: "You have more bacterial cells in your gut than human cells in your body.",
+            nclexStrategy: "Differentiation: Peptidoglycan = Bacteria."
+        },
+        {
+            category: "The Microbial World",
+            question: "Prions are infectious agents consisting of:",
+            options: ["DNA only", "RNA only", "Protein only", "Protein and DNA"],
+            correct: 2,
+            explanation: "Prions consist ONLY of protein. They contain no genetic material (DNA/RNA).",
+            digDeeper: "Prions cause diseases like Mad Cow Disease by misfolding brain proteins.",
+            funFact: "Prions are indestructible by standard cooking or sterilization.",
+            nclexStrategy: "Diagnosis: 'Protein Only' = Prion."
+        },
+
+        // --- CATEGORY 2: Microscopy ---
+        {
+            category: "Microscopy",
+            question: "Resolution in microscopy is best defined as:",
+            options: ["Making an image larger", "The difference in color between object and background", "The ability to distinguish two separate points", "The amount of light passing through"],
+            correct: 2,
+            explanation: "Resolution is the ability to separate two close objects as distinct entities. Magnification just makes them bigger.",
+            digDeeper: "Immersion oil is used to improve resolution by preventing light refraction (bending).",
+            funFact: "The best light microscopes can resolve objects 0.2 micrometers apart.",
+            nclexStrategy: "Assessment: Distinguish 'size' (magnification) from 'clarity' (resolution)."
+        },
+        {
+            category: "Microscopy",
+            question: "Which type of stain uses a single dye to color the cell?",
+            options: ["Differential Stain", "Simple Stain", "Gram Stain", "Acid-fast Stain"],
+            correct: 1,
+            explanation: "Simple stains use one basic dye (like methylene blue) to color the cell, allowing you to see shape and arrangement.",
+            digDeeper: "Basic dyes carry a positive charge and are attracted to the negatively charged cell components.",
+            funFact: "Negative stains color the background, not the cell, creating a 'ghost' effect.",
+            nclexStrategy: "Analysis: 'Simple' implies one step/one dye."
+        },
+        {
+            category: "Microscopy",
+            question: "In the Gram stain, what color are Gram-positive bacteria after the alcohol wash?",
+            options: ["Purple", "Pink", "Colorless", "Brown"],
+            correct: 0,
+            explanation: "Gram-positive bacteria have thick peptidoglycan that holds the Crystal Violet-Iodine complex. Alcohol dehydrates the wall, trapping the purple dye.",
+            digDeeper: "Gram-negative bacteria lose the purple dye during the alcohol wash and become colorless (until counterstained pink).",
+            funFact: "The Gram stain was invented by Hans Christian Gram in 1884 and is still the #1 test in microbiology.",
+            nclexStrategy: "Prioritization: Knowing Gram status helps predict which antibiotics will work."
+        },
+        {
+            category: "Microscopy",
+            question: "Which bacterial shape is described as spherical?",
+            options: ["Bacillus", "Coccus", "Spirillum", "Vibrio"],
+            correct: 1,
+            explanation: "Coccus = Spherical. Bacillus = Rod. Spirillum = Spiral. Vibrio = Curved rod.",
+            digDeeper: "Groupings matter too: 'Staphylo' means clusters (like grapes), 'Strepto' means chains.",
+            funFact: "Streptococcus pyogenes (strep throat) looks like a chain of pearls under a scope.",
+            nclexStrategy: "Terminology: Memorize Coccus=Circle, Bacillus=Bar/Bat."
+        },
+        {
+            category: "Microscopy",
+            question: "The Acid-Fast stain is primarily used to identify which genus of bacteria?",
+            options: ["Escherichia", "Staphylococcus", "Mycobacterium", "Bacillus"],
+            correct: 2,
+            explanation: "Acid-fast stains detect Mycobacterium (like M. tuberculosis) because they have waxy mycolic acid in their walls that resists normal stains.",
+            digDeeper: "Acid-fast bacteria turn bright pink/red; non-acid-fast turn blue.",
+            funFact: "It's called 'acid-fast' because once the dye is in, even strong acid can't wash it out.",
+            nclexStrategy: "Diagnosis: Tuberculosis suspicion = Order Acid-Fast Bacilli (AFB) smear."
+        },
+        {
+            category: "Microscopy",
+            question: "What is the primary advantage of an Electron Microscope over a Light Microscope?",
+            options: ["It is cheaper", "It allows observation of live cells", "It has vastly superior resolution and magnification", "It uses color dyes"],
+            correct: 2,
+            explanation: "Electron microscopes use electron beams (wavelength 1000x shorter than light), allowing magnification up to 100,000x to see viruses.",
+            digDeeper: "Transmission EM sees inside cells; Scanning EM sees the surface in 3D.",
+            funFact: "Electron microscopes use magnets as 'lenses' to bend the electron beam.",
+            nclexStrategy: "Differentiation: Light = Bacteria size. Electron = Virus/Internal Organelle size."
+        },
+        {
+            category: "Microscopy",
+            question: "A chain of spherical bacteria is called:",
+            options: ["Staphylococcus", "Streptococcus", "Diplobacillus", "Sarcina"],
+            correct: 1,
+            explanation: "Strepto- prefix means 'chain'. Coccus means 'sphere'. Thus, Streptococcus.",
+            digDeeper: "Staphylo- means 'cluster' (like grapes). Diplo- means 'pairs'.",
+            funFact: "Sarcina is a cubical packet of 8, 16, or more cells.",
+            nclexStrategy: "Word Breakdown: Strepto (Strip/Chain) vs Staphylo (Staff/Bunch)."
+        },
+
+        // --- CATEGORY 3: The Cell ---
+        {
+            category: "The Cell",
+            question: "Which structure is NOT found in Prokaryotic cells?",
+            options: ["Ribosomes", "Cell membrane", "Membrane-bound Nucleus", "Chromosome"],
+            correct: 2,
+            explanation: "Prokaryotes (Bacteria/Archaea) lack a membrane-bound nucleus and membrane-bound organelles.",
+            digDeeper: "Their DNA is in a region called the nucleoid.",
+            funFact: "Prokaryote means 'Before Nucleus'. Eukaryote means 'True Nucleus'.",
+            nclexStrategy: "Elimination: If it has a membrane-bound nucleus, it's NOT a bacteria."
+        },
+        {
+            category: "The Cell",
+            question: "The cell wall of Gram-negative bacteria contains:",
+            options: ["Thick peptidoglycan and teichoic acids", "Thin peptidoglycan and an outer membrane with LPS", "No peptidoglycan", "A waxy mycolic acid layer"],
+            correct: 1,
+            explanation: "Gram-negatives have a thin layer of peptidoglycan sandwiched between the inner membrane and a unique Outer Membrane containing Lipopolysaccharide (LPS).",
+            digDeeper: "LPS is an endotoxin. If these bacteria die in the blood, LPS can cause fatal shock.",
+            funFact: "The space between the membranes in Gram-negatives is called the Periplasm.",
+            nclexStrategy: "Safety: Recognizing Gram-neg sepsis is critical because antibiotics can release more toxin."
+        },
+        {
+            category: "The Cell",
+            question: "Which structure is used primarily for bacterial motility?",
+            options: ["Pili", "Flagella", "Capsule", "Ribosome"],
+            correct: 1,
+            explanation: "Flagella are long protein tails that spin like a propeller to move bacteria.",
+            digDeeper: "Chemotaxis is the movement toward food (attractant) or away from poison (repellent).",
+            funFact: "Bacterial flagella can spin at 100,000 RPM!",
+            nclexStrategy: "Function: Flagella = Movement. Pili = Attachment."
+        },
+        {
+            category: "The Cell",
+            question: "Endospores are produced by bacteria primarily for:",
+            options: ["Reproduction", "Digestion", "Survival in harsh conditions", "Movement"],
+            correct: 2,
+            explanation: "Endospores are dormant, tough structures made by genera like Bacillus and Clostridium to survive heat, drying, and chemicals.",
+            digDeeper: "They are NOT for reproduction (1 cell makes 1 spore).",
+            funFact: "Spores from bees preserved in amber for 40 million years have been revived!",
+            nclexStrategy: "Infection Control: Spores (like C. diff) resist alcohol sanitizer. You must wash hands with soap and water."
+        },
+        {
+            category: "The Cell",
+            question: "The Endosymbiotic Theory explains the origin of which organelles?",
+            options: ["Ribosomes and Lysosomes", "Mitochondria and Chloroplasts", "Golgi and ER", "Nucleus and Nucleolus"],
+            correct: 1,
+            explanation: "This theory states that mitochondria and chloroplasts were once free-living bacteria that were engulfed by a larger cell.",
+            digDeeper: "Evidence: Mitochondria have their own circular DNA and 70S ribosomes, just like bacteria.",
+            funFact: "You inherit your mitochondria exclusively from your mother.",
+            nclexStrategy: "Synthesis: Connect 'Energy organelles' to 'Bacterial origins'."
+        },
+        {
+            category: "The Cell",
+            question: "What is the difference between Prokaryotic and Eukaryotic ribosomes?",
+            options: ["Prokaryotic are 80S; Eukaryotic are 70S", "Prokaryotic are 70S; Eukaryotic are 80S", "They are identical sizes", "Prokaryotes do not have ribosomes"],
+            correct: 1,
+            explanation: "Prokaryotic ribosomes are 70S (smaller). Eukaryotic ribosomes are 80S (larger).",
+            digDeeper: "Antibiotics like Erythromycin target 70S ribosomes, killing bacteria but leaving human 80S ribosomes alone.",
+            funFact: "The 'S' stands for Svedberg unit, a measure of how fast they sink in a centrifuge.",
+            nclexStrategy: "Pharmacology: Understanding selective toxicity relies on these structural differences."
+        },
+        {
+            category: "The Cell",
+            question: "Pili (fimbriae) are primarily used for:",
+            options: ["Swimming", "Attachment to surfaces", "Protein synthesis", "Energy production"],
+            correct: 1,
+            explanation: "Pili are hair-like appendages allowing bacteria to stick to surfaces (like your throat cells) or transfer DNA (Sex pilus).",
+            digDeeper: "Without pili, many pathogens (like Neisseria gonorrhoeae) would be flushed out by urine and couldn't cause infection.",
+            funFact: "A sex pilus acts like a grappling hook to pull two bacteria together for DNA swap.",
+            nclexStrategy: "Pathophysiology: Adhesion is often the first step in infection."
+        },
+    // --- NEW ADDITIONS (Paste this into the allQuestions array) ---
+
+    // --- SECTION: The Microbial World (5 New Questions) ---
+    {
+        category: "The Microbial World",
+        question: "Why were John Tyndall's experiments critical to validating Pasteur's work on spontaneous generation?",
+        options: ["He discovered viruses", "He proved that some microbes (endospores) are heat-resistant", "He invented the autoclave", "He discovered antibiotics"],
+        correct: 1,
+        explanation: "Tyndall explained why Pasteur's results weren't always reproducible: some broths (like hay infusions) contained heat-resistant endospores that survived boiling.",
+        digDeeper: "This led to the development of 'Tyndallization' (fractional sterilization) to kill spores.",
+        funFact: "Before Tyndall, scientists thought Pasteur was just lucky or lying because they couldn't replicate his sterile broth results!",
+        nclexStrategy: "Evaluation: Understand that 'Sterile' means the absence of ALL life forms, including spores.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Bacillus_subtilis_endospore_stain.png/600px-Bacillus_subtilis_endospore_stain.png"
+    },
+    {
+        category: "The Microbial World",
+        question: "Which acellular agent consists of a short piece of RNA without a protein coat and primarily infects plants?",
+        options: ["Prion", "Virion", "Viroid", "Bacteriophage"],
+        correct: 2,
+        explanation: "Viroids are simpler than viruses. They are single-stranded RNA molecules with no protein capsid and cause diseases like Potato Spindle Tuber disease.",
+        digDeeper: "Virusoids are similar but require a 'helper virus' to replicate.",
+        funFact: "Viroids are the smallest known infectious pathogens.",
+        nclexStrategy: "Differentiation: Viroid = Plant/RNA only. Prion = Animal/Protein only."
+    },
+    {
+        category: "The Microbial World",
+        question: "Which of the following is a beneficial role of the human microbiome (normal flora)?",
+        options: ["Causing random infections to build immunity", "Competitive exclusion of pathogens", "Producing insulin for the host", "Degrading human DNA"],
+        correct: 1,
+        explanation: "Normal flora occupy space and use nutrients, physically preventing harmful pathogens from attaching (Competitive Exclusion). They also produce Vitamin K.",
+        digDeeper: " Dysbiosis is the imbalance of this flora, often leading to issues like C. diff infections after antibiotics.",
+        funFact: "Babies are born nearly sterile and acquire their microbiome during birth and breastfeeding.",
+        nclexStrategy: "Health Promotion: Protect normal flora by avoiding unnecessary antibiotics."
+    },
+    {
+        category: "The Microbial World",
+        question: "Helminths (worms) are studied in microbiology primarily because:",
+        options: ["They are single-celled prokaryotes", "They are always microscopic", "Their eggs and larvae are microscopic", "They are a type of bacteria"],
+        correct: 2,
+        explanation: "Adult helminths (roundworms, tapeworms) are macroscopic, but their diagnostic stages (eggs/larvae) are microscopic and identified via stool samples.",
+        digDeeper: "They belong to the Domain Eukarya.",
+        funFact: "Tapeworms can grow up to 25 meters long inside the human intestine!",
+        nclexStrategy: "Assessment: 'Ova and Parasites' (O&P) is the lab order used to detect these.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Ascaris_Lumbricoides_%28roundworm%29.jpg/640px-Ascaris_Lumbricoides_%28roundworm%29.jpg"
+    },
+    {
+        category: "The Microbial World",
+        question: "Viruses are best described as:",
+        options: [" obligate intracellular parasites", "free-living decomposers", "simple prokaryotes", "primitive eukaryotes"],
+        correct: 0,
+        explanation: "Viruses cannot replicate outside a host cell. They hijack the host's machinery to copy their genetic material.",
+        digDeeper: "Outside a cell, a virus particle is called a 'virion' and is metabolically inert.",
+        funFact: "There are more viruses in the ocean than there are stars in the known universe.",
+        nclexStrategy: "Pathophysiology: Viruses 'hide' inside cells, making them harder to target with drugs than bacteria."
+    },
+
+    // --- SECTION: Microscopy (5 New Questions) ---
+    {
+        category: "Microscopy",
+        question: "Why is immersion oil used with the 100x objective lens?",
+        options: ["To clean the lens", "To increase magnification to 2000x", "To prevent light refraction (bending) and loss", "To kill the bacteria on the slide"],
+        correct: 2,
+        explanation: "Light bends (refracts) when hitting air. Oil has the same refractive index as glass, channeling more light into the lens for better resolution.",
+        digDeeper: "Without oil, the image at 1000x would be too blurry and dark to see clearly.",
+        funFact: "Cedar wood oil was originally used, but modern synthetic oils don't dry out or damage lenses.",
+        nclexStrategy: "Technique: Never get oil on the 40x lens; it ruins the image quality."
+    },
+    {
+        category: "Microscopy",
+        question: "If the ocular lens is 10x and the objective lens is 40x, what is the Total Magnification?",
+        options: ["40x", "50x", "400x", "4000x"],
+        correct: 2,
+        explanation: "Total Magnification = Ocular Lens Power × Objective Lens Power (10 × 40 = 400).",
+        digDeeper: "The standard ocular lens is usually 10x.",
+        funFact: "The limit of useful magnification for a light microscope is about 1000x-1500x.",
+        nclexStrategy: "Assessment: Calculations are rare in micro, but common in dosage—practice the math!"
+    },
+    {
+        category: "Microscopy",
+        question: "Which stain is considered a 'negative stain' used to identify capsules?",
+        options: ["Gram Stain", "India Ink / Capsule Stain", "Endospore Stain", "Flagella Stain"],
+        correct: 1,
+        explanation: "Capsules repel most dyes. A negative stain colors the background dark, leaving the capsule as a clear halo around the cell.",
+        digDeeper: "Capsules (like in *Cryptococcus* or *Streptococcus pneumoniae*) prevent phagocytosis by immune cells.",
+        funFact: "A capsule looks like a glowing force field protecting the bacteria.",
+        nclexStrategy: "Diagnosis: Capsules = Virulence. They make the bacteria slippery and hard for white blood cells to catch.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Pneumococcus_CDC_PHIL_ID_2113.jpg/640px-Pneumococcus_CDC_PHIL_ID_2113.jpg"
+    },
+    {
+        category: "Microscopy",
+        question: "Which corkscrew-shaped bacterial group uses an axial filament for movement?",
+        options: ["Vibrio", "Spirillum", "Spirochete", "Bacillus"],
+        correct: 2,
+        explanation: "Spirochetes (like *Treponema pallidum*, cause of Syphilis) have internal flagella (axial filaments) that allow them to corkscrew through viscous fluids.",
+        digDeeper: "Spirilla are also spiral but have external flagella and are rigid. Spirochetes are flexible.",
+        funFact: "Spirochetes can screw themselves directly into tissue, allowing them to hide from the immune system.",
+        nclexStrategy: "Differentiation: Syphilis and Lyme disease are caused by Spirochetes.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Treponema_pallidum_01.png/640px-Treponema_pallidum_01.png"
+    },
+    {
+        category: "Microscopy",
+        question: "Scanning Electron Microscopes (SEM) are best used for observing:",
+        options: ["Internal cellular structures", "Surface details in 3D", "Live organism motility", "Viruses inside a nucleus"],
+        correct: 1,
+        explanation: "SEM scans the surface with electrons, creating a detailed 3D image. Transmission EM (TEM) cuts through the sample to see inside.",
+        digDeeper: "Sample preparation for EM kills the organism, so you cannot see movement.",
+        funFact: "SEM images are naturally black and white; the colors you see in textbooks are added digitally ('false color').",
+        nclexStrategy: "Analysis: If the image looks 3D and high-res, it's SEM."
+    },
+
+    // --- SECTION: The Cell (5 New Questions) ---
+    {
+        category: "The Cell",
+        question: "Plasmids are best defined as:",
+        options: ["The main bacterial chromosome", "Small, circular, extrachromosomal DNA", "The protein coat of a virus", "Storage granules for food"],
+        correct: 1,
+        explanation: "Plasmids are small, separate DNA loops that carry 'bonus' genes, such as antibiotic resistance. They are not essential for life but provide advantages.",
+        digDeeper: "Bacteria can swap plasmids via conjugation (sex pili), spreading resistance rapidly.",
+        funFact: "Genetic engineers use plasmids as 'vehicles' to insert human genes (like insulin) into bacteria.",
+        nclexStrategy: "Pharmacology: Plasmids are the reason we have 'Superbugs' like MRSA.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Plasmid_%28english%29.svg/640px-Plasmid_%28english%29.svg.png"
+    },
+    {
+        category: "The Cell",
+        question: "Active transport differs from Facilitated Diffusion because Active Transport:",
+        options: ["Requires no energy", "Moves molecules from High to Low concentration", "Requires energy (ATP) to move against the gradient", "Only moves water"],
+        correct: 2,
+        explanation: "Active transport pumps molecules 'uphill' (Low to High concentration), which requires energy (ATP or Proton Motive Force).",
+        digDeeper: "Facilitated diffusion needs a carrier protein but is passive (High to Low, no energy).",
+        funFact: "Your nerve cells use active transport constantly to reset their electrical charge.",
+        nclexStrategy: "Physiology: 'Active' = Energy/ATP. 'Passive' = Gravity/Gradient."
+    },
+    {
+        category: "The Cell",
+        question: "Which organelle is often referred to as the 'Post Office' of the cell because it modifies and packages proteins?",
+        options: ["Endoplasmic Reticulum", "Golgi Apparatus", "Lysosome", "Mitochondria"],
+        correct: 1,
+        explanation: "The Golgi Apparatus receives proteins from the ER, adds tags (sugar/phosphate), and ships them to their final destination.",
+        digDeeper: "Lysosomes are the 'Recycling Center' containing digestive enzymes.",
+        funFact: "Camillo Golgi discovered this organelle in 1898 using a silver stain.",
+        nclexStrategy: "Analogy: ER = Factory. Golgi = Shipping/FedEx. Nucleus = HQ.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Nucleus_ER_golgi.jpg/640px-Nucleus_ER_golgi.jpg"
+    },
+    {
+        category: "The Cell",
+        question: "Chemotaxis describes a bacterium's ability to:",
+        options: ["Digest chemicals for food", "Move toward an attractant or away from a repellent", "Stick to chemical surfaces", "Transfer DNA chemically"],
+        correct: 1,
+        explanation: "Bacteria use flagella to 'Run' (straight) and 'Tumble' (change direction) to navigate chemical gradients (Chemotaxis).",
+        digDeeper: "Attractants include sugar/amino acids. Repellents include toxins/waste.",
+        funFact: "E. coli can decide to change direction in less than 0.1 seconds.",
+        nclexStrategy: "Pathophysiology: Bacteria use chemotaxis to find target tissues in the body."
+    },
+    {
+        category: "The Cell",
+        question: "The Fluid Mosaic Model describes the structure of:",
+        options: ["The Peptidoglycan Cell Wall", "The Cytoplasmic (Plasma) Membrane", " The Bacterial Capsule", "The Viral Capsid"],
+        correct: 1,
+        explanation: "The plasma membrane is a phospholipid bilayer with proteins floating in it like a mosaic. It is fluid, not rigid.",
+        digDeeper: "This fluidity allows proteins to move around to perform functions like transport and signaling.",
+        funFact: "Cholesterol is inserted into animal cell membranes to keep them from freezing or melting.",
+        nclexStrategy: "Physiology: Damage to this membrane causes cell lysis (death) -> basis of some antibiotics (Polymyxin).",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cell_membrane_detailed_diagram_en.svg/640px-Cell_membrane_detailed_diagram_en.svg.png"
+    },
+    // --- BATCH 3: NEW QUESTIONS (Paste into allQuestions array) ---
+
+    // --- The Microbial World ---
+    {
+        category: "The Microbial World",
+        question: "Which of the following is NOT a domain in the three-domain system of classification?",
+        options: ["Bacteria", "Archaea", "Prokarya", "Eukarya"],
+        correct: 2,
+        explanation: "The three domains are Bacteria, Archaea, and Eukarya. 'Prokarya' is not a domain; it is a descriptive term for cells without a nucleus (which includes both Bacteria and Archaea).",
+        digDeeper: "This system was proposed by Carl Woese based on ribosomal RNA differences.",
+        funFact: "Before the 1970s, scientists used a 5-Kingdom system that grouped all bacteria together incorrectly.",
+        nclexStrategy: "Classification: Remember 'BAE' for the three domains: Bacteria, Archaea, Eukarya.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Phylogenetic_tree.svg/640px-Phylogenetic_tree.svg.png"
+    },
+    {
+        category: "The Microbial World",
+        question: "Bioremediation is an example of a beneficial role of microorganisms. It involves:",
+        options: ["Using microbes to clean up pollutants", "Using microbes to produce insulin", "Using microbes to flavor food", "Using microbes to cause disease"],
+        correct: 0,
+        explanation: "Bioremediation uses bacteria to degrade toxic wastes, such as cleaning up oil spills or treating sewage.",
+        digDeeper: "Biotechnology is the broader field of using microbes to produce useful products.",
+        funFact: "Specific bacteria were sprayed on the Deepwater Horizon oil spill to 'eat' the oil.",
+        nclexStrategy: "Application: Microbes aren't just 'germs'; they are tools for environmental safety."
+    },
+    {
+        category: "The Microbial World",
+        question: "Which scientist is considered the 'Father of Modern Microbiology' and developed the rabies vaccine?",
+        options: ["Robert Hooke", "Louis Pasteur", "Francesco Redi", "Tyndall"],
+        correct: 1,
+        explanation: "Louis Pasteur not only disproved spontaneous generation but also developed pasteurization and vaccines for rabies and anthrax.",
+        digDeeper: "He also discovered that fermentation is caused by living yeast, not a chemical reaction.",
+        funFact: "Pasteur suffered a stroke at age 45 but did some of his best work while partially paralyzed.",
+        nclexStrategy: "Knowledge: Associate 'Pasteur' with 'Pasteurization' and 'Vaccines'."
+    },
+    {
+        category: "The Microbial World",
+        question: "Protozoa are best described as:",
+        options: ["Multicellular photosynthetic plants", "Single-celled microscopic animals", "Acellular infectious agents", "Prokaryotic bacteria"],
+        correct: 1,
+        explanation: "Protozoa are single-celled, eukaryotic organisms that are generally motile and lack a cell wall, similar to microscopic animals.",
+        digDeeper: "Examples include *Amoeba* and the malaria parasite *Plasmodium*.",
+        funFact: "Some protozoa are predators that hunt and eat bacteria.",
+        nclexStrategy: "Differentiation: Algae = Plant-like (photosynthesis). Protozoa = Animal-like (hunters)."
+    },
+    {
+        category: "The Microbial World",
+        question: "Virusoids differ from Viroids because Virusoids:",
+        options: ["Infect animals instead of plants", "Require a helper virus to replicate", "Are made of protein only", "Have a DNA core"],
+        correct: 1,
+        explanation: "Virusoids are single-stranded RNA molecules that can only replicate inside a cell if that cell is *also* infected by a specific 'helper' virus.",
+        digDeeper: "They are essentially parasites of viruses.",
+        funFact: "Hepatitis D is a virusoid that requires Hepatitis B to infect a human.",
+        nclexStrategy: "Pathology: You can't get Hep D unless you already have Hep B."
+    },
+
+    // --- Microscopy ---
+    {
+        category: "Microscopy",
+        question: "In the Gram stain, Iodine acts as the:",
+        options: ["Primary Stain", "Counterstain", "Mordant", "Decolorizer"],
+        correct: 2,
+        explanation: "Iodine is the Mordant. It binds with the Crystal Violet to form a large insoluble complex (CV-I) that gets trapped in the thick peptidoglycan of Gram-positives.",
+        digDeeper: "Without iodine, the crystal violet would wash out of both cell types.",
+        funFact: "Mordant comes from the Latin word 'mordere', meaning 'to bite'—it helps the dye bite into the cell.",
+        nclexStrategy: "Process: If you skip iodine, Gram-positives will accidentally look pink (Gram-negative)."
+    },
+    {
+        category: "Microscopy",
+        question: "Which microscope uses a laser beam to scan multiple planes and create a 3D computer model of a thick specimen?",
+        options: ["Bright-field Microscope", "Confocal Microscope", "Electron Microscope", "Phase-Contrast Microscope"],
+        correct: 1,
+        explanation: "Confocal microscopy uses lasers and computers to scan 'slices' of a sample, building a high-resolution 3D image, often using fluorescent dyes.",
+        digDeeper: "It is excellent for looking at biofilms.",
+        funFact: "It works like a CT scan but for cells.",
+        nclexStrategy: "Technology: Confocal = Laser + 3D."
+    },
+    {
+        category: "Microscopy",
+        question: "The ability of a lens to distinguish between two separate points is called:",
+        options: ["Magnification", "Contrast", "Refraction", "Resolution"],
+        correct: 3,
+        explanation: "Resolution (Resolving Power) is the ability to show detail. Magnification just enlarges the image.",
+        digDeeper: "Shorter wavelengths of light (blue/violet) provide better resolution than longer waves (red).",
+        funFact: "The theoretical limit of a standard light microscope is 0.2 micrometers.",
+        nclexStrategy: "Assessment: A blurry image has poor resolution, regardless of how big (magnified) it is."
+    },
+    {
+        category: "Microscopy",
+        question: "Sarcina indicates a bacterial arrangement of:",
+        options: ["Pairs", "Chains", "Cubical packets of 8 or more", "Random clusters"],
+        correct: 2,
+        explanation: "Sarcina is a specific arrangement where cocci divide in three perpendicular planes, forming a cube-like packet.",
+        digDeeper: "Tetrads are packets of 4 (two planes).",
+        funFact: "Sarcina ventriculi is found in the stomach and can survive very high acid.",
+        nclexStrategy: "Terminology: Sarcina = Cube."
+    },
+    {
+        category: "Microscopy",
+        question: "Basic dyes (like Methylene Blue) bind to bacteria because:",
+        options: ["The dye is negative and the cell is positive", "The dye is positive and the cell is negative", "The dye is neutral", "The dye dissolves the cell wall"],
+        correct: 1,
+        explanation: "Bacterial cell surfaces have a negative charge. Basic dyes have a positive charge (cationic). Opposites attract, staining the cell.",
+        digDeeper: "Acidic dyes are negative and are repelled by the cell, staining the background instead.",
+        funFact: "This is why your clothes stain easily—cotton is negatively charged too!",
+        nclexStrategy: "Chemistry: Basic = Positive charge. Acidic = Negative charge."
+    },
+
+    // --- The Cell ---
+    {
+        category: "The Cell",
+        question: "The movement of water across a semi-permeable membrane from low solute to high solute concentration is called:",
+        options: ["Active Transport", "Facilitated Diffusion", "Osmosis", "Group Translocation"],
+        correct: 2,
+        explanation: "Osmosis is the specific diffusion of water. Water always moves to 'dilute' the side with more salt/sugar.",
+        digDeeper: "In a hypotonic solution (freshwater), bacteria need cell walls to prevent bursting from water rushing in.",
+        funFact: "Gargling salt water works because osmosis pulls fluid out of swollen throat tissue.",
+        nclexStrategy: "Fluid & Electrolytes: Water follows Salt."
+    },
+    {
+        category: "The Cell",
+        question: "Which component of the Gram-negative outer membrane causes septic shock?",
+        options: ["Peptidoglycan", "Lipid A (Endotoxin)", "Porin proteins", "Teichoic acid"],
+        correct: 1,
+        explanation: "Lipid A is the toxic portion of Lipopolysaccharide (LPS) found in the outer membrane. When the cell dies, Lipid A is released, triggering massive inflammation.",
+        digDeeper: "This is why treating a massive Gram-neg infection requires careful monitoring.",
+        funFact: "It takes very little Endotoxin to cause a fever—micrograms!",
+        nclexStrategy: "Safety: Watch for hypotension (shock) in patients with Gram-negative bacteremia.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/LPS.svg/640px-LPS.svg.png"
+    },
+    {
+        category: "The Cell",
+        question: "The site of protein synthesis in the cell is the:",
+        options: ["Golgi Complex", "Lysosome", "Ribosome", "Smooth ER"],
+        correct: 2,
+        explanation: "Ribosomes read mRNA and assemble amino acids into proteins (translation). They are found floating in cytoplasm or attached to Rough ER.",
+        digDeeper: "Smooth ER synthesizes lipids and detoxifies drugs; it has no ribosomes.",
+        funFact: "A single bacterial cell can contain tens of thousands of ribosomes.",
+        nclexStrategy: "Physiology: Ribosome = Protein Factory."
+    },
+    {
+        category: "The Cell",
+        question: "Which bacterial structure allows for the transfer of DNA (plasmids) between cells?",
+        options: ["Fimbriae", "Sex Pilus", "Flagella", "Glycocalyx"],
+        correct: 1,
+        explanation: "The Sex Pilus is a specialized tube that connects two bacteria, allowing the transfer of genetic material (Conjugation).",
+        digDeeper: "This is a major way antibiotic resistance genes spread.",
+        funFact: "Bacteria can even transfer DNA to cells of a different species!",
+        nclexStrategy: "Infection Control: Conjugation turns sensitive bacteria into resistant 'Superbugs'."
+    },
+    {
+        category: "The Cell",
+        question: "Lysosomes contain:",
+        options: ["Genetic material", "Digestive enzymes", "ATP synthase", "Photosynthetic pigments"],
+        correct: 1,
+        explanation: "Lysosomes are membrane-bound sacs containing powerful digestive enzymes to break down waste, food, or old organelles.",
+        digDeeper: "White blood cells use lysosomes to digest bacteria they have eaten (phagocytosis).",
+        funFact: "If a lysosome pops inside the cell, the cell digests itself (Autolysis).",
+        nclexStrategy: "Immunity: Phagocytes rely on lysosomes to kill pathogens.",
+        image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Phagocytosis2.png/640px-Phagocytosis2.png"
+    },
+
+    ];
+
+    // --- STATE MANAGEMENT ---
+    let currentQuizQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let isAnswered = false;
+
+    // --- DOM ELEMENTS ---
+    const menuView = document.getElementById('menuView');
+    const quizView = document.getElementById('quizView');
+    const resultView = document.getElementById('resultView');
+    const quizFooter = document.getElementById('quizFooter');
+    
+    const questionText = document.getElementById('questionText');
+    const optionsList = document.getElementById('optionsList');
+    const questionCategory = document.getElementById('questionCategory');
+    const progressBar = document.getElementById('progressBar');
+    const actionBtn = document.getElementById('actionBtn');
+    const feedbackSection = document.getElementById('feedbackSection');
+
+    // --- FUNCTIONS ---
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const btn = document.querySelector('.mode-toggle');
+        btn.innerText = document.body.classList.contains('dark-mode') ? '☀️ Light' : '🌙 Dark';
+    }
+
+    function toggleDigDeeper() {
+        const content = document.getElementById('digDeeperContent');
+        content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz(filter) {
+        // Filter Questions
+        if (filter === 'all') {
+            currentQuizQuestions = JSON.parse(JSON.stringify(allQuestions));
+        } else {
+            const map = {
+                'microbial_world': "The Microbial World",
+                'microscopy': "Microscopy",
+                'the_cell': "The Cell"
+            };
+            currentQuizQuestions = allQuestions.filter(q => q.category === map[filter]);
+        }
+
+        // Shuffle Questions
+        currentQuizQuestions = shuffleArray(currentQuizQuestions);
+
+        // Reset State
+        currentQuestionIndex = 0;
+        score = 0;
+        isAnswered = false;
+
+        // Switch Views
+        menuView.classList.remove('active');
+        resultView.classList.remove('active');
+        quizView.classList.add('active');
+        quizFooter.style.display = 'flex';
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const qData = currentQuizQuestions[currentQuestionIndex];
+        
+        // Update UI
+        questionCategory.innerText = `${qData.category} • Question ${currentQuestionIndex + 1}/${currentQuizQuestions.length}`;
+        questionText.innerText = qData.question;
+        progressBar.style.width = `${((currentQuestionIndex) / currentQuizQuestions.length) * 100}%`;
+        
+        // Reset Feedback
+        feedbackSection.style.display = 'none';
+        document.getElementById('digDeeperContent').style.display = 'none';
+        actionBtn.innerText = 'Submit';
+        actionBtn.disabled = true;
+        isAnswered = false;
+
+        // Shuffle Options (keep track of correct answer)
+        // We create an array of objects { text: "Option A", originalIndex: 0 }
+        let optionsObj = qData.options.map((opt, i) => ({ text: opt, originalIndex: i }));
+        optionsObj = shuffleArray(optionsObj);
+
+        optionsList.innerHTML = '';
+        
+        optionsObj.forEach((optObj, index) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerHTML = `<span>${optObj.text}</span>`;
+            
+            // On Click
+            li.onclick = () => {
+                if (isAnswered) return;
+                
+                // Select visual
+                document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+                li.classList.add('selected');
+                actionBtn.disabled = false;
+                
+                // Store selected index relative to original array
+                li.dataset.originalIndex = optObj.originalIndex;
+            };
+            
+            optionsList.appendChild(li);
+        });
+    }
+
+    function handleAction() {
+        if (!isAnswered) {
+            submitAnswer();
+        } else {
+            nextQuestion();
+        }
+    }
+
+    function submitAnswer() {
+        isAnswered = true;
+        const qData = currentQuizQuestions[currentQuestionIndex];
+        const selectedLi = document.querySelector('.option-item.selected');
+        const selectedOriginalIndex = parseInt(selectedLi.dataset.originalIndex);
+
+        // Check correctness
+        const isCorrect = (selectedOriginalIndex === qData.correct);
+        if (isCorrect) score++;
+
+        // UI Updates
+        const items = document.querySelectorAll('.option-item');
+        items.forEach(li => {
+            li.style.cursor = 'default';
+            // Mark correct answer visually
+            // We have to find the li that corresponds to the correct original index
+            // Note: We didn't store original index on all LIs, let's fix that logic or just iterate text
+            // Better: We mapped them. Let's find the correct LI.
+        });
+
+        // Re-loop to highlight correct/wrong
+        // We need to match the text or the index we stored.
+        // Since we shuffled objects, we can verify by text or rebuild properly.
+        // For simplicity: We stored data-originalIndex on click. We need it on creation.
+        // Let's rely on the text content or re-architect slightly? 
+        // Actually, let's just re-loop the DOM elements and check their internal property if we attached it.
+        // We attached it only on click. Let's fix loadQuestion to attach data-originalIndex to ALL items.
+    } 
+    
+    // Fix loadQuestion onclick logic for robust checking:
+    // ... Inside loadQuestion loop ...
+    // li.dataset.originalIndex = optObj.originalIndex; // Attach to all
+    
+    // REDEFINING submitAnswer for robustness:
+    function submitAnswer() {
+        isAnswered = true;
+        const qData = currentQuizQuestions[currentQuestionIndex];
+        const selectedLi = document.querySelector('.option-item.selected');
+        const selectedIndex = parseInt(selectedLi.dataset.originalIndex);
+
+        // Highlight
+        const allOptions = document.querySelectorAll('.option-item');
+        allOptions.forEach(li => {
+            const idx = parseInt(li.dataset.originalIndex);
+            if (idx === qData.correct) {
+                li.classList.add('correct');
+            } else if (li === selectedLi && idx !== qData.correct) {
+                li.classList.add('wrong');
+            }
+        });
+
+        if (selectedIndex === qData.correct) {
+            score++;
+            document.getElementById('feedbackHeader').innerText = "Correct!";
+            document.getElementById('feedbackHeader').className = "feedback-header correct";
+        } else {
+            document.getElementById('feedbackHeader').innerText = "Incorrect";
+            document.getElementById('feedbackHeader').className = "feedback-header wrong";
+        }
+
+        // Populate Feedback
+        document.getElementById('nclexText').innerText = qData.nclexStrategy;
+        document.getElementById('explanationText').innerHTML = qData.explanation;
+        document.getElementById('digDeeperContent').innerHTML = qData.digDeeper;
+        document.getElementById('funFactText').innerText = "Fun Fact: " + qData.funFact;
+
+        feedbackSection.style.display = 'block';
+        actionBtn.innerText = (currentQuestionIndex === currentQuizQuestions.length - 1) ? 'See Results' : 'Next Question';
+        
+        // Scroll to bottom
+        setTimeout(() => {
+            quizView.scrollTo({ top: quizView.scrollHeight, behavior: 'smooth' });
+        }, 100);
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuizQuestions.length) {
+            loadQuestion();
+            quizView.scrollTo(0,0);
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizView.classList.remove('active');
+        quizFooter.style.display = 'none';
+        resultView.classList.add('active');
+
+        const percentage = Math.round((score / currentQuizQuestions.length) * 100);
+        document.getElementById('finalScore').innerText = `${percentage}%`;
+        
+        const deg = percentage * 3.6;
+        document.getElementById('scoreCircle').style.background = 
+            `conic-gradient(var(--correct) ${deg}deg, rgba(0,0,0,0.1) 0deg)`;
+
+        const msg = document.getElementById('resultMessage');
+        if (percentage >= 90) msg.innerText = "Outstanding! You're ready for the exam.";
+        else if (percentage >= 80) msg.innerText = "Great job! Just a few reviews needed.";
+        else if (percentage >= 70) msg.innerText = "Good pass. Review the explanation sections.";
+        else msg.innerText = "Keep studying! Use the 'Dig Deeper' content to learn.";
+    }
+
+    function showMenu() {
+        resultView.classList.remove('active');
+        quizView.classList.remove('active');
+        quizFooter.style.display = 'none';
+        menuView.classList.add('active');
+    }
+
+    // Initialize fixes for option dataset
+    // Overwrite the previous loadQuestion with the fixed one
+    function loadQuestion() {
+        const qData = currentQuizQuestions[currentQuestionIndex];
+        
+        questionCategory.innerText = `${qData.category} • Q ${currentQuestionIndex + 1}/${currentQuizQuestions.length}`;
+        questionText.innerText = qData.question;
+        progressBar.style.width = `${((currentQuestionIndex) / currentQuizQuestions.length) * 100}%`;
+        
+        feedbackSection.style.display = 'none';
+        document.getElementById('digDeeperContent').style.display = 'none';
+        actionBtn.innerText = 'Submit Answer';
+        actionBtn.disabled = true;
+        isAnswered = false;
+
+        // Shuffle Options
+        let optionsObj = qData.options.map((opt, i) => ({ text: opt, originalIndex: i }));
+        optionsObj = shuffleArray(optionsObj);
+
+        optionsList.innerHTML = '';
+        
+        optionsObj.forEach((optObj) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.dataset.originalIndex = optObj.originalIndex; // Store index here!
+            li.innerHTML = `<div style="width:20px; height:20px; border-radius:50%; border:2px solid #ccc; margin-right:15px; flex-shrink:0;"></div><span>${optObj.text}</span>`;
+            
+            li.onclick = () => {
+                if (isAnswered) return;
+                
+                // Visual Selection
+                document.querySelectorAll('.option-item').forEach(item => {
+                    item.classList.remove('selected');
+                    item.querySelector('div').style.borderColor = '#ccc';
+                    item.querySelector('div').style.backgroundColor = 'transparent';
+                });
+                
+                li.classList.add('selected');
+                li.querySelector('div').style.borderColor = 'var(--primary)';
+                li.querySelector('div').style.backgroundColor = 'var(--primary)';
+                
+                actionBtn.disabled = false;
+            };
+            
+            optionsList.appendChild(li);
+        });
+    }
+
+</script>
+
+</body>
+</html>

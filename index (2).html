@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosage Calc Master Quiz</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --success-color: #22c55e;
+            --error-color: #ef4444;
+            --border-color: #334155;
+            --tip-bg: #172554;
+            --tip-text: #bfdbfe;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            margin-top: 20px;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: var(--accent-color); }
+
+        .progress-container {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fbbf24;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .options-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--accent-color);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .option-btn.correct {
+            border-color: var(--success-color);
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success-color);
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
+        .option-btn:disabled { cursor: default; }
+
+        .feedback-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .tip-box {
+            background: var(--tip-bg);
+            color: var(--tip-text);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: var(--accent-color);
+            color: #0f172a;
+        }
+        
+        .nav-btn.secondary {
+            background: var(--border-color);
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .hidden { display: none; }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="quiz-card">
+        
+        <div class="header">
+            <h1>Dosage Calc</h1>
+            <div id="q-count">Loading...</div>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div id="quiz-view">
+            <div class="question-text" id="question-text"></div>
+            <div class="options-list" id="options-list"></div>
+            
+            <div class="feedback-section" id="feedback">
+                <strong id="feedback-title" style="font-size: 1.1rem; display:block; margin-bottom:5px;"></strong>
+                <div id="feedback-text"></div>
+                <div class="tip-box">
+                    <strong>💡 PRO TIP:</strong> <span id="feedback-tip"></span>
+                </div>
+                <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+            </div>
+        </div>
+
+        <div id="results-view" class="hidden" style="text-align: center;">
+            <h2>Quiz Complete!</h2>
+            <div class="score-display" id="final-score">0%</div>
+            <p id="results-msg"></p>
+            
+            <button class="nav-btn" style="background-color: var(--error-color); color: white; display: none;" id="retake-btn" onclick="startRetake()">
+                ⚠️ Retake Missed Questions
+            </button>
+            
+            <button class="nav-btn secondary" onclick="initQuiz()">
+                🔄 Start New Randomized Quiz
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- 1. THE DATA ---
+    const DB = [
+        { q: "Interpret: <span class='formula'>XIX</span>", a: ["19", "21", "11", "29"], correct: "19", explain: "X(10) + IX(9) = 19.", tip: "Sandwich rule: Subtract the middle number from the right." },
+        { q: "Correct metric notation?", a: ["0.5 mg", "1.50 ml", ".5 mg", "5.0 mg"], correct: "0.5 mg", explain: "Leading zero required (0.5). Trailing zero forbidden (5.0).", tip: "Leading Zero = YES. Trailing Zero = NO." },
+        { q: "Solve: <span class='formula'>3/4 ÷ 2/7</span>", a: ["21/8", "6/28", "3/14", "5/11"], correct: "21/8", explain: "Flip second fraction and multiply: 3/4 × 7/2 = 21/8.", tip: "Keep, Change, Flip." },
+        { q: "Convert <span class='formula'>1.5 L</span> to ml.", a: ["1500 ml", "150 ml", "15 ml", "0.0015 ml"], correct: "1500 ml", explain: "1 L = 1000 ml. 1.5 × 1000 = 1500.", tip: "L to ml = 3 jumps to the right." },
+        { q: "Round <span class='formula'>0.55</span> to tenths.", a: ["0.6", "0.5", "0.55", "1.0"], correct: "0.6", explain: "Hundredths is 5. Round up.", tip: "5 or more, raise the score." },
+        { q: "Household equivalent of 1 teaspoon?", a: ["5 ml", "15 ml", "30 ml", "10 ml"], correct: "5 ml", explain: "1 tsp = 5 ml. 1 Tbs = 15 ml.", tip: "tsp is small (5). Tbs is Big (15)." },
+        { q: "Value of: <span class='formula'>XIV</span>", a: ["14", "16", "24", "6"], correct: "14", explain: "X(10) + IV(4) = 14.", tip: "IV = 4." },
+        { q: "Convert <span class='formula'>3 5/8</span> to improper fraction.", a: ["29/8", "24/8", "15/8", "29/24"], correct: "29/8", explain: "3×8=24, 24+5=29.", tip: "MAD Method: Multiply, Add, Denominator." },
+        { q: "Convert <span class='formula'>50 kg</span> to lbs.", a: ["110 lbs", "100 lbs", "22.7 lbs", "115 lbs"], correct: "110 lbs", explain: "50 × 2.2 = 110.", tip: "Kg to Lbs always gets bigger." },
+        { q: "Add: <span class='formula'>3.2 + 6.77</span>", a: ["9.97", "9.79", "10.07", "9.87"], correct: "9.97", explain: "Align decimals: 3.20 + 6.77.", tip: "Line up the dots." },
+        { q: "Which Roman Numeral is INVALID?", a: ["IIII", "IV", "XXX", "VIII"], correct: "IIII", explain: "Max 3 repeats allowed.", tip: "Can't do 4 sticks. Must use subtraction (IV)." },
+        { q: "Calc: <span class='formula'>3/7 × 2/5</span>", a: ["6/35", "5/12", "14/15", "6/12"], correct: "6/35", explain: "Multiply across: 3×2=6, 7×5=35.", tip: "Top×Top, Bottom×Bottom." },
+        { q: "Convert <span class='formula'>0.25 g</span> to mg.", a: ["250 mg", "25 mg", "2.5 mg", "2500 mg"], correct: "250 mg", explain: "Move decimal 3 right.", tip: "g to mg = number gets bigger." },
+        { q: "ml in <span class='formula'>2 ounces</span>?", a: ["60 ml", "30 ml", "15 ml", "90 ml"], correct: "60 ml", explain: "1 oz = 30 ml. 2 × 30 = 60.", tip: "1 oz is a shot glass (30ml)." },
+        { q: "Round <span class='formula'>0.746</span> to hundredths.", a: ["0.75", "0.74", "0.7", "0.8"], correct: "0.75", explain: "Thousandth is 6, round up.", tip: "Check neighbor to the right." },
+        { q: "Which is a <span class='formula'>Proper Fraction</span>?", a: ["3/5", "3/2", "1 1/2", "5/3"], correct: "3/5", explain: "Numerator < Denominator.", tip: "Proper = Bottom heavy." },
+        { q: "Solve: <span class='formula'>XXIX</span>", a: ["29", "31", "24", "19"], correct: "29", explain: "20 + 9 = 29.", tip: "XX (20) + IX (9)." },
+        { q: "Decimal of <span class='formula'>3/4</span>?", a: ["0.75", "0.34", "0.43", "3.4"], correct: "0.75", explain: "3 ÷ 4 = 0.75.", tip: "3 quarters = 75 cents." },
+        { q: "First step dividing decimals?", a: ["Move decimal in divisor", "Round", "Add zeros", "Ignore"], correct: "Move decimal in divisor", explain: "Make the divisor a whole number.", tip: "Fix the outside number first." },
+        { q: "mcg in <span class='formula'>1 mg</span>?", a: ["1000 mcg", "100 mcg", "10 mcg", "0.001 mcg"], correct: "1000 mcg", explain: "1 mg = 1000 mcg.", tip: "Rule of 1000s." }
+    ];
+
+    // --- 2. STATE ---
+    let queue = [];
+    let missed = [];
+    let index = 0;
+    let answered = false;
+
+    // --- 3. FUNCTIONS ---
+
+    // Standard Shuffle
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function initQuiz() {
+        // Deep copy DB to create a fresh queue
+        queue = JSON.parse(JSON.stringify(DB)); 
+        shuffle(queue);
+        missed = [];
+        index = 0;
+        showQuiz();
+        render();
+    }
+
+    function startRetake() {
+        // Queue becomes the missed items
+        queue = JSON.parse(JSON.stringify(missed));
+        shuffle(queue);
+        missed = []; // clear missed so we can track new errors
+        index = 0;
+        showQuiz();
+        render();
+    }
+
+    function showQuiz() {
+        document.getElementById('results-view').classList.add('hidden');
+        document.getElementById('quiz-view').classList.remove('hidden');
+        document.getElementById('progress-container').style.visibility = 'visible';
+    }
+
+    function render() {
+        if (index >= queue.length) {
+            endQuiz();
+            return;
+        }
+
+        answered = false;
+        let item = queue[index];
+        
+        // Update UI Text
+        document.getElementById('q-count').innerText = `Q ${index + 1} of ${queue.length}`;
+        document.getElementById('question-text').innerHTML = item.q;
+        
+        // Progress Bar
+        let pct = ((index) / queue.length) * 100;
+        document.getElementById('progress-bar').style.width = pct + '%';
+
+        // Hide Feedback
+        document.getElementById('feedback').style.display = 'none';
+
+        // Options
+        let opts = shuffle([...item.a]); // Shuffle options
+        let container = document.getElementById('options-list');
+        container.innerHTML = '';
+
+        opts.forEach(opt => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => check(btn, opt, item);
+            container.appendChild(btn);
+        });
+    }
+
+    function check(btn, choice, item) {
+        if (answered) return;
+        answered = true;
+
+        let allBtns = document.querySelectorAll('.option-btn');
+        let isRight = (choice === item.correct);
+
+        if (isRight) {
+            btn.classList.add('correct');
+            document.getElementById('feedback-title').innerHTML = "✅ Correct!";
+            document.getElementById('feedback-title').style.color = "var(--success-color)";
+        } else {
+            btn.classList.add('wrong');
+            document.getElementById('feedback-title').innerHTML = "❌ Incorrect";
+            document.getElementById('feedback-title').style.color = "var(--error-color)";
+            
+            // Track missed
+            missed.push(item);
+
+            // Highlight correct
+            allBtns.forEach(b => {
+                if (b.innerHTML === item.correct) b.classList.add('correct');
+            });
+        }
+
+        document.getElementById('feedback-text').innerHTML = item.explain;
+        document.getElementById('feedback-tip').innerHTML = item.tip;
+        document.getElementById('feedback').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        index++;
+        render();
+    }
+
+    function endQuiz() {
+        document.getElementById('quiz-view').classList.add('hidden');
+        document.getElementById('results-view').classList.remove('hidden');
+        document.getElementById('progress-container').style.visibility = 'hidden';
+
+        let total = queue.length;
+        let errors = missed.length;
+        let score = Math.round(((total - errors) / total) * 100);
+
+        document.getElementById('final-score').innerText = score + "%";
+        
+        let msg = score === 100 ? "Perfect Score! You are a master." : "Good practice. Review any errors below.";
+        document.getElementById('results-msg').innerText = msg;
+
+        let retakeBtn = document.getElementById('retake-btn');
+        if (errors > 0) {
+            retakeBtn.style.display = 'inline-block';
+            retakeBtn.innerText = `⚠️ Retake ${errors} Missed Questions`;
+        } else {
+            retakeBtn.style.display = 'none';
+        }
+    }
+
+    // Start immediately
+    initQuiz();
+
+</script>
+</body>
+</html>
